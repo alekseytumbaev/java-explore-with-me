@@ -1,6 +1,8 @@
 package ru.practicum.ewm.stats.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.stats.dto.EndpointHit;
 import ru.practicum.ewm.stats.dto.ViewStats;
 import ru.practicum.ewm.stats.error.exception.EndBeforeStartTimeException;
@@ -16,18 +18,17 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 @Service
+@RequiredArgsConstructor
 public class StatsService {
     private final EndpointHitRepository statsRepo;
 
-    public StatsService(EndpointHitRepository statsRepo) {
-        this.statsRepo = statsRepo;
-    }
-
+    @Transactional
     public EndpointHit saveStats(EndpointHit endpointHit) {
         EndpointHitEntity entity = statsRepo.save(EndpointHitMapper.toEntity(endpointHit));
         return EndpointHitMapper.toDto(entity);
     }
 
+    @Transactional(readOnly = true)
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         if (end.isBefore(start)) {
             throw new EndBeforeStartTimeException(

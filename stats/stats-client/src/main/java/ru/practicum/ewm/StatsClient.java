@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import ru.practicum.ewm.stats.contant.Patterns;
 import ru.practicum.ewm.stats.dto.EndpointHit;
 import ru.practicum.ewm.stats.dto.ViewStats;
 
@@ -48,8 +49,8 @@ public class StatsClient {
 
         Map<String, Object> params = new HashMap<>();
         //не использовал URLEncoder как написано в задании, так как RestTemplate сам кодирует
-        params.put("start", start.format(ofPattern("yyyy-MM-dd HH:mm:ss")));
-        params.put("end", end.format(ofPattern("yyyy-MM-dd HH:mm:ss")));
+        params.put("start", start.format(ofPattern(Patterns.dateTimePattern)));
+        params.put("end", end.format(ofPattern(Patterns.dateTimePattern)));
         params.put("unique", unique);
         uris.forEach(uri -> params.put("uris", uri));
 

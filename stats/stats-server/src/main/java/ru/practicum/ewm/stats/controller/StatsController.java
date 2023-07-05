@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.stats.contant.Patterns;
 import ru.practicum.ewm.stats.dto.EndpointHit;
 import ru.practicum.ewm.stats.dto.ViewStats;
 import ru.practicum.ewm.stats.service.StatsService;
@@ -25,14 +26,13 @@ public class StatsController {
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
     public void saveStats(@RequestBody @Valid EndpointHit endpointHit) {
-        endpointHit.setId(null);
         EndpointHit endpointHitDto = statsService.saveStats(endpointHit);
         log.info("Hit endpoint: {}", endpointHitDto);
     }
 
     @GetMapping("/stats")
-    public List<ViewStats> getStats(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
-                                    @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+    public List<ViewStats> getStats(@RequestParam @DateTimeFormat(pattern = Patterns.dateTimePattern) LocalDateTime start,
+                                    @RequestParam @DateTimeFormat(pattern = Patterns.dateTimePattern) LocalDateTime end,
                                     @RequestParam(required = false) List<String> uris,
                                     @RequestParam(defaultValue = "false") Boolean unique) {
         List<ViewStats> statsList = statsService.getStats(start, end, uris, unique);
