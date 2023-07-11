@@ -19,7 +19,7 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 public class StatsClient {
     private static final Logger log = LoggerFactory.getLogger(StatsClient.class);
 
-    private static final String STATS_SERVER_URI = "http://localhost:9090";
+    private static final String STATS_SERVER_URI = "http://stats-server:9090";
     private static final String HIT_URL = STATS_SERVER_URI + "/hit";
     private static final String STATS_URL = STATS_SERVER_URI + "/stats";
 

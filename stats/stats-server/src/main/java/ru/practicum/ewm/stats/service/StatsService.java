@@ -24,6 +24,7 @@ public class StatsService {
 
     @Transactional
     public EndpointHit saveStats(EndpointHit endpointHit) {
+        endpointHit.setIp(endpointHit.getIp().trim());
         EndpointHitEntity entity = statsRepo.save(EndpointHitMapper.toEntity(endpointHit));
         return EndpointHitMapper.toDto(entity);
     }

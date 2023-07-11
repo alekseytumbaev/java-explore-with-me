@@ -33,5 +33,31 @@ services:
     container_name: ewm-service
     build:
       context: ./ewm-service
+    ports:
+      - "8080:8080"
+      - "5006:5006"
+    depends_on:
+      - ewm-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
+      - POSTGRES_USER=ewm
+      - POSTGRES_PASSWORD=ewm
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=*:5006,server=y,suspend=n
+      - TZ=${TZ}
+
+  ewm-db:
+    container_name: ewm-db
+    image: postgres:14-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=ewm
+      - POSTGRES_USER=ewm
+      - POSTGRES_PASSWORD=ewm
+      - TZ=${TZ}
+    volumes:
+      - ewm-db-data:/var/lib/postgresql/data
+
 volumes:
   stats-db-data:
+  ewm-db-data:
