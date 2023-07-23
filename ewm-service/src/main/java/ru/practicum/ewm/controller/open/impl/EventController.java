@@ -2,8 +2,7 @@ package ru.practicum.ewm.controller.open.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.StatsClient;
 import ru.practicum.ewm.controller.open.EventsApi;
 import ru.practicum.ewm.model.dto.EventFullDto;
@@ -19,7 +18,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Controller
+import static java.time.LocalDateTime.now;
+
+@RestController
 @RequiredArgsConstructor
 @Slf4j
 public class EventController implements EventsApi {
@@ -28,25 +29,25 @@ public class EventController implements EventsApi {
     private final StatsClient statsClient;
 
     @Override
-    public ResponseEntity<EventFullDto> getEventPublic(Long id) {
+    public EventFullDto getEventPublic(Long id) {
         HttpServletRequest request = WebUtils.getCurrentHttpRequest();
         statsClient.saveStats(
-                new EndpointHit(null, ServiceConstants.app, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now())
+                new EndpointHit(null, ServiceConstants.app, request.getRequestURI(), request.getRemoteAddr(), now())
         );
 
         EventFullDto eventFullDto = eventService.getEventPublic(id);
         log.info("Event found: {}", eventFullDto);
-        return ResponseEntity.ok(eventFullDto);
+        return eventFullDto;
     }
 
     @Override
-    public ResponseEntity<List<EventShortDto>> getEventsPublic(String text, List<Long> categories, Boolean paid,
-                                                               LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                                               Boolean onlyAvailable, EventSort sort,
-                                                               Integer from, Integer size) {
+    public List<EventShortDto> getEventsPublic(String text, List<Long> categories, Boolean paid,
+                                               LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                               Boolean onlyAvailable, EventSort sort,
+                                               Integer from, Integer size) {
         HttpServletRequest request = WebUtils.getCurrentHttpRequest();
         statsClient.saveStats(
-                new EndpointHit(null, ServiceConstants.app, request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now())
+                new EndpointHit(null, ServiceConstants.app, request.getRequestURI(), request.getRemoteAddr(), now())
         );
 
         EventParameter parameter = EventParameter.builder()
@@ -62,6 +63,6 @@ public class EventController implements EventsApi {
         log.info("Found {} events with parameters: eventParameter={}, sort={}, from={}, size={}",
                 events.size(), parameter, sort, from, size);
 
-        return ResponseEntity.ok(events);
+        return events;
     }
 }

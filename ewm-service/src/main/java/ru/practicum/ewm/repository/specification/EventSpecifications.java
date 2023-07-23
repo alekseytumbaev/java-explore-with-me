@@ -1,7 +1,8 @@
 package ru.practicum.ewm.repository.specification;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.data.jpa.domain.Specification;
-import ru.practicum.ewm.model.dto.EventFullDto;
+import ru.practicum.ewm.model.dto.EventState;
 import ru.practicum.ewm.model.dto.ParticipationRequestStatus;
 import ru.practicum.ewm.model.entity.Event;
 import ru.practicum.ewm.model.entity.ParticipationRequest;
@@ -13,9 +14,10 @@ import javax.persistence.criteria.Subquery;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
-public final class EventSpecifications {
+@UtilityClass
+public class EventSpecifications {
 
-    public static Specification<Event> where(EventParameter parameter) {
+    public Specification<Event> where(EventParameter parameter) {
         Specification<Event> spec = Specification.where(empty());
         if (parameter.getIds() != null && !parameter.getIds().isEmpty()) {
             spec = spec.and(idIn(parameter.getIds()));
@@ -48,34 +50,34 @@ public final class EventSpecifications {
         return spec;
     }
 
-    private static Specification<Event> idIn(Collection<Long> ids) {
+    private Specification<Event> idIn(Collection<Long> ids) {
         return (root, query, cb) -> cb.in(root.get("id")).value(ids);
     }
 
-    private static Specification<Event> categoryIn(Collection<Long> categoryIds) {
+    private Specification<Event> categoryIn(Collection<Long> categoryIds) {
         return (root, query, cb) -> cb.in(root.get("category").get("id")).value(categoryIds);
     }
 
-    private static Specification<Event> initiatorIn(Collection<Long> initiatorIds) {
+    private Specification<Event> initiatorIn(Collection<Long> initiatorIds) {
         return (root, query, cb) -> cb.in(root.get("initiator").get("id")).value(initiatorIds);
     }
 
-    private static Specification<Event> stateIn(Collection<EventFullDto.StateEnum> states) {
+    private Specification<Event> stateIn(Collection<EventState> states) {
         return (root, query, cb) -> cb.in(root.get("state")).value(states);
     }
 
-    private static Specification<Event> notBefore(LocalDateTime dateTime) {
+    private Specification<Event> notBefore(LocalDateTime dateTime) {
         return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("eventDate"), dateTime);
     }
 
-    private static Specification<Event> notAfter(LocalDateTime dateTime) {
+    private Specification<Event> notAfter(LocalDateTime dateTime) {
         return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("eventDate"), dateTime);
     }
 
     /**
      * Case-insensitive
      */
-    private static Specification<Event> annotationOrDescriptionLike(String text) {
+    private Specification<Event> annotationOrDescriptionLike(String text) {
         return (root, query, cb) -> {
             String pattern = "%" + text.toLowerCase() + "%";
             return cb.or(
@@ -85,7 +87,7 @@ public final class EventSpecifications {
         };
     }
 
-    private static Specification<Event> isAvailable(boolean available) {
+    private Specification<Event> isAvailable(boolean available) {
         return (root, query, cb) -> {
             if (!available) {
                 return cb.conjunction();
@@ -106,17 +108,11 @@ public final class EventSpecifications {
         };
     }
 
-
-    private static Specification<Event> isPaid(boolean paid) {
+    private Specification<Event> isPaid(boolean paid) {
         return (root, query, cb) -> cb.equal(root.get("paid"), paid);
     }
 
-    private static Specification<Event> empty() {
+    private Specification<Event> empty() {
         return (root, query, cb) -> cb.conjunction();
-    }
-
-
-    private EventSpecifications() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 }

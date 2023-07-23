@@ -1,7 +1,7 @@
 package ru.practicum.ewm.model.entity;
 
 import lombok.*;
-import ru.practicum.ewm.model.dto.EventFullDto;
+import ru.practicum.ewm.model.dto.EventState;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -47,5 +47,5 @@ public class Event {
     private User initiator;
 
     @Enumerated(EnumType.STRING)
-    private EventFullDto.StateEnum state;
+    private EventState state;
 }

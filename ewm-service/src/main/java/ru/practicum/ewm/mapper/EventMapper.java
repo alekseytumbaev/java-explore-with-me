@@ -1,5 +1,6 @@
 package ru.practicum.ewm.mapper;
 
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 import ru.practicum.ewm.model.dto.*;
 import ru.practicum.ewm.model.entity.Category;
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 
 @UtilityClass
 public class EventMapper {
-    public Event toEntity(NewEventDto newEventDto, Category category, User initiator, EventFullDto.StateEnum state) {
+    public Event toEntity(NewEventDto newEventDto, Category category, User initiator, EventState state) {
         return new Event(
                 null,
                 newEventDto.getAnnotation(),
@@ -78,38 +79,23 @@ public class EventMapper {
      */
     public Event toUpdatedEntity(UpdateEventUserRequest updateEventUserRequest, Category category, Event previousEvent) {
         Event event = copyEvent(previousEvent);
-        if (updateEventUserRequest.getAnnotation() != null) {
-            event.setAnnotation(updateEventUserRequest.getAnnotation());
-        }
-        if (updateEventUserRequest.getCategory() != null && category != null) {
-            event.setCategory(category);
-        }
-        if (updateEventUserRequest.getDescription() != null) {
-            event.setDescription(updateEventUserRequest.getDescription());
-        }
-        if (updateEventUserRequest.getEventDate() != null) {
-            event.setEventDate(updateEventUserRequest.getEventDate());
-        }
-        if (updateEventUserRequest.getLocation() != null) {
-            Location newLocation = updateEventUserRequest.getLocation();
-            event.setLongitude(newLocation.getLon());
-            event.setLatitude(newLocation.getLat());
-        }
-        if (updateEventUserRequest.getPaid() != null) {
-            event.setPaid(updateEventUserRequest.getPaid());
-        }
-        if (updateEventUserRequest.getParticipantLimit() != null) {
-            event.setParticipantLimit(updateEventUserRequest.getParticipantLimit());
-        }
-        if (updateEventUserRequest.getRequestModeration() != null) {
-            event.setRequestModeration(updateEventUserRequest.getRequestModeration());
-        }
+        CommonUpdateFields common = new CommonUpdateFields(
+                category,
+                updateEventUserRequest.getAnnotation(),
+                updateEventUserRequest.getDescription(),
+                updateEventUserRequest.getEventDate(),
+                updateEventUserRequest.getLocation(),
+                updateEventUserRequest.getPaid(),
+                updateEventUserRequest.getParticipantLimit(),
+                updateEventUserRequest.getRequestModeration()
+        );
+        setCommonUpdateFields(event, common);
         if (updateEventUserRequest.getStateAction() != null) {
             UpdateEventUserRequest.StateActionEnum stateAction = updateEventUserRequest.getStateAction();
             if (stateAction.equals(UpdateEventUserRequest.StateActionEnum.SEND_TO_REVIEW)) {
-                event.setState(EventFullDto.StateEnum.PENDING);
+                event.setState(EventState.PENDING);
             } else if (stateAction.equals(UpdateEventUserRequest.StateActionEnum.CANCEL_REVIEW)) {
-                event.setState(EventFullDto.StateEnum.CANCELED);
+                event.setState(EventState.CANCELED);
             }
         }
         if (updateEventUserRequest.getTitle() != null) {
@@ -120,44 +106,58 @@ public class EventMapper {
 
     public Event toUpdatedEntity(UpdateEventAdminRequest updateEventAdminRequest, Category category, Event previousEvent) {
         Event event = copyEvent(previousEvent);
-        if (updateEventAdminRequest.getAnnotation() != null) {
-            event.setAnnotation(updateEventAdminRequest.getAnnotation());
-        }
-        if (updateEventAdminRequest.getCategory() != null && category != null) {
-            event.setCategory(category);
-        }
-        if (updateEventAdminRequest.getDescription() != null) {
-            event.setDescription(updateEventAdminRequest.getDescription());
-        }
-        if (updateEventAdminRequest.getEventDate() != null) {
-            event.setEventDate(updateEventAdminRequest.getEventDate());
-        }
-        if (updateEventAdminRequest.getLocation() != null) {
-            Location newLocation = updateEventAdminRequest.getLocation();
-            event.setLongitude(newLocation.getLon());
-            event.setLatitude(newLocation.getLat());
-        }
-        if (updateEventAdminRequest.getPaid() != null) {
-            event.setPaid(updateEventAdminRequest.getPaid());
-        }
-        if (updateEventAdminRequest.getParticipantLimit() != null) {
-            event.setParticipantLimit(updateEventAdminRequest.getParticipantLimit());
-        }
-        if (updateEventAdminRequest.getRequestModeration() != null) {
-            event.setRequestModeration(updateEventAdminRequest.getRequestModeration());
-        }
+        CommonUpdateFields common = new CommonUpdateFields(
+                category,
+                updateEventAdminRequest.getAnnotation(),
+                updateEventAdminRequest.getDescription(),
+                updateEventAdminRequest.getEventDate(),
+                updateEventAdminRequest.getLocation(),
+                updateEventAdminRequest.getPaid(),
+                updateEventAdminRequest.getParticipantLimit(),
+                updateEventAdminRequest.getRequestModeration()
+        );
+        setCommonUpdateFields(event, common);
         if (updateEventAdminRequest.getStateAction() != null) {
-            UpdateEventAdminRequest.StateActionEnum stateAction = updateEventAdminRequest.getStateAction();
-            if (stateAction.equals(UpdateEventAdminRequest.StateActionEnum.PUBLISH_EVENT)) {
-                event.setState(EventFullDto.StateEnum.PUBLISHED);
-            } else if (stateAction.equals(UpdateEventAdminRequest.StateActionEnum.REJECT_EVENT)) {
-                event.setState(EventFullDto.StateEnum.CANCELED);
+            UpdateEventAdminRequest.StateAction stateAction = updateEventAdminRequest.getStateAction();
+            if (stateAction.equals(UpdateEventAdminRequest.StateAction.PUBLISH_EVENT)) {
+                event.setState(EventState.PUBLISHED);
+            } else if (stateAction.equals(UpdateEventAdminRequest.StateAction.REJECT_EVENT)) {
+                event.setState(EventState.CANCELED);
             }
         }
         if (updateEventAdminRequest.getTitle() != null) {
             event.setTitle(updateEventAdminRequest.getTitle());
         }
         return event;
+    }
+
+
+    private static void setCommonUpdateFields(Event event, CommonUpdateFields common) {
+        if (common.annotation != null) {
+            event.setAnnotation(common.annotation);
+        }
+        if (common.category != null) {
+            event.setCategory(common.category);
+        }
+        if (common.description != null) {
+            event.setDescription(common.description);
+        }
+        if (common.eventDate != null) {
+            event.setEventDate(common.eventDate);
+        }
+        if (common.location != null) {
+            event.setLongitude(common.location.getLon());
+            event.setLatitude(common.location.getLat());
+        }
+        if (common.paid != null) {
+            event.setPaid(common.paid);
+        }
+        if (common.participantLimit != null) {
+            event.setParticipantLimit(common.participantLimit);
+        }
+        if (common.requestModeration != null) {
+            event.setRequestModeration(common.requestModeration);
+        }
     }
 
     private Event copyEvent(Event event) {
@@ -178,5 +178,18 @@ public class EventMapper {
                 event.getInitiator(),
                 event.getState()
         );
+    }
+
+
+    @Value
+    private class CommonUpdateFields {
+        Category category;
+        String annotation;
+        String description;
+        LocalDateTime eventDate;
+        Location location;
+        Boolean paid;
+        Integer participantLimit;
+        Boolean requestModeration;
     }
 }

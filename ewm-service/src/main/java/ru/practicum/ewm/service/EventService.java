@@ -24,9 +24,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.lang.String.format;
-import static ru.practicum.ewm.model.dto.EventFullDto.StateEnum.*;
-import static ru.practicum.ewm.model.dto.UpdateEventAdminRequest.StateActionEnum.PUBLISH_EVENT;
-import static ru.practicum.ewm.model.dto.UpdateEventAdminRequest.StateActionEnum.REJECT_EVENT;
+import static ru.practicum.ewm.model.dto.EventState.*;
+import static ru.practicum.ewm.model.dto.UpdateEventAdminRequest.StateAction.PUBLISH_EVENT;
+import static ru.practicum.ewm.model.dto.UpdateEventAdminRequest.StateAction.REJECT_EVENT;
 
 @Service
 @RequiredArgsConstructor
@@ -140,7 +140,7 @@ public class EventService {
             checkEventStartTime(updateEventAdminRequest.getEventDate(), MINIMUM_HOURS_BEFORE_EVENT_START_ADMIN);
         }
 
-        UpdateEventAdminRequest.StateActionEnum stateAction = updateEventAdminRequest.getStateAction();
+        UpdateEventAdminRequest.StateAction stateAction = updateEventAdminRequest.getStateAction();
         if (stateAction != null) {
             //check that state can be changed
             if (stateAction.equals(REJECT_EVENT) && event.getState().equals(PUBLISHED)) {
@@ -178,7 +178,7 @@ public class EventService {
             throw new UnauthorizedException(
                     format("User with id=%d cannot update event with id=%d, because user is not initiator", initiatorId, eventId));
         }
-        EventFullDto.StateEnum currState = event.getState();
+        EventState currState = event.getState();
         if (!currState.equals(PENDING) && !currState.equals(CANCELED)) {
             throw new EventUpdateRestrictedException(
                     format("Initiator with id=%d cannot update event with id=%d, because event state = %s, " +
@@ -223,11 +223,7 @@ public class EventService {
             return List.of();
         }
 
-        List<Long> eventIds = new LinkedList<>();
-        for (Event event : events) {
-            eventIds.add(event.getId());
-        }
-
+        List<Long> eventIds = eventsToIds(events);
         Map<Long, Long> eventIdToRequestsCount = requestService.getEventIdToConfirmedRequestsCount(eventIds);
         Map<Long, Long> eventIdToViews = getEventIdToViews(eventIds, uniqueIps);
 
@@ -255,11 +251,7 @@ public class EventService {
             return List.of();
         }
 
-        List<Long> eventIds = new LinkedList<>();
-        for (Event event : events) {
-            eventIds.add(event.getId());
-        }
-
+        List<Long> eventIds = eventsToIds(events);
         Map<Long, Long> eventIdToRequestsCount = requestService.getEventIdToConfirmedRequestsCount(eventIds);
         Map<Long, Long> eventIdToViews = getEventIdToViews(eventIds, uniqueIps);
 
@@ -277,6 +269,14 @@ public class EventService {
         }
 
         return shortDtos;
+    }
+
+    private List<Long> eventsToIds(Iterable<Event> events) {
+        List<Long> eventIds = new LinkedList<>();
+        for (Event event : events) {
+            eventIds.add(event.getId());
+        }
+        return eventIds;
     }
 
     /**

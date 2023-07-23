@@ -24,6 +24,10 @@
 	<properties>
 		<java.version>11</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<h2.version>2.1.214</h2.version>
+		<postgresql.version>42.6.0</postgresql.version>
+		<lombok.version>1.18.28</lombok.version>
+		<jackson-datatype-jsr310.version>2.15.2</jackson-datatype-jsr310.version>
 	</properties>
 
 	<build>

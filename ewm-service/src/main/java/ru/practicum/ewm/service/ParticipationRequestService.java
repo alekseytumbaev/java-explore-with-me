@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.error.exception.*;
-import ru.practicum.ewm.mapper.ParticipationRequestMapper;
 import ru.practicum.ewm.model.dto.*;
 import ru.practicum.ewm.model.entity.Event;
 import ru.practicum.ewm.model.entity.ParticipationRequest;
@@ -20,6 +19,7 @@ import java.util.Map;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static ru.practicum.ewm.mapper.ParticipationRequestMapper.*;
 import static ru.practicum.ewm.model.dto.ParticipationRequestStatus.*;
 
 @Service
@@ -36,7 +36,7 @@ public class ParticipationRequestService {
             throw new EventNotFoundException(format("Event with id=%d not found", eventId));
         }
         List<ParticipationRequest> requests = requestRepo.findAllByEvent_Initiator_IdAndEvent_Id(initiatorId, eventId);
-        return requests.stream().map(ParticipationRequestMapper::toDto).collect(toList());
+        return requests.stream().map(r -> toDto(r)).collect(toList());
     }
 
     public EventRequestStatusUpdateResult changeRequestStatus(Long initiatorId, Long eventId,
@@ -56,7 +56,7 @@ public class ParticipationRequestService {
         //if event has no participant limit all requests was already confirmed automatically
         if (event.getParticipantLimit() == 0) {
             requests = requestRepo.findAllByEvent_Initiator_IdAndEvent_Id(initiatorId, eventId);
-            List<ParticipationRequestDto> dtos = requests.stream().map(ParticipationRequestMapper::toDto).collect(toList());
+            List<ParticipationRequestDto> dtos = requests.stream().map(r -> toDto(r)).collect(toList());
             return new EventRequestStatusUpdateResult(dtos, List.of());
         }
 
@@ -81,12 +81,12 @@ public class ParticipationRequestService {
         for (ParticipationRequest request : requests) {
             if (statusUpdateRequest.getStatus().equals(CONFIRMED)) {
                 request.setStatus(CONFIRMED);
-                confirmedRequests.add(ParticipationRequestMapper.toDto(request));
+                confirmedRequests.add(toDto(request));
                 confirmedRequestsCount++;
             }
             if (statusUpdateRequest.getStatus().equals(REJECTED)) {
                 request.setStatus(REJECTED);
-                rejectedRequests.add(ParticipationRequestMapper.toDto(request));
+                rejectedRequests.add(toDto(request));
             }
 
             //if participant limit is reached, all pending requests will be rejected
@@ -94,7 +94,7 @@ public class ParticipationRequestService {
                 requestRepo.saveAll(requests);
                 rejectedRequests = requests.stream()
                         .filter(r -> !r.getStatus().equals(CONFIRMED))
-                        .map(ParticipationRequestMapper::toDto)
+                        .map(r -> toDto(r))
                         .collect(toList());
                 requestRepo.updateAllStatusByEvent_IdAndPreviousStatus(eventId, PENDING, REJECTED);
                 return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
@@ -107,7 +107,7 @@ public class ParticipationRequestService {
 
     public List<ParticipationRequestDto> getByRequesterId(Long userId) {
         List<ParticipationRequest> requests = requestRepo.findAllByRequester_Id(userId);
-        return requests.stream().map(ParticipationRequestMapper::toDto).collect(toList());
+        return requests.stream().map(r -> toDto(r)).collect(toList());
     }
 
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
@@ -115,7 +115,7 @@ public class ParticipationRequestService {
                 .orElseThrow(() -> new RequestNotFoundException(format("Request with id=%d not found", requestId)));
 
         request.setStatus(CANCELED);
-        return ParticipationRequestMapper.toDto(requestRepo.save(request));
+        return toDto(requestRepo.save(request));
     }
 
     public ParticipationRequestDto addParticipationRequest(Long userId, Long eventId) {
@@ -133,7 +133,7 @@ public class ParticipationRequestService {
                             "because he is the initiator", userId, eventId));
         }
 
-        if (!event.getState().equals(EventFullDto.StateEnum.PUBLISHED)) {
+        if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new RequestCreationRestrictedException(format("Cannot create request for event with id=%d, " +
                     "because the event is not published", eventId));
         }
@@ -158,7 +158,7 @@ public class ParticipationRequestService {
         ParticipationRequest request = requestRepo.save(
                 new ParticipationRequest(null, event, requester, status, LocalDateTime.now())
         );
-        return ParticipationRequestMapper.toDto(request);
+        return toDto(request);
     }
 
     public long countEventConfirmedRequests(long eventId) {

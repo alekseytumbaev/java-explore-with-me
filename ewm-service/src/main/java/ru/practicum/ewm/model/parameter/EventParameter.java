@@ -2,7 +2,7 @@ package ru.practicum.ewm.model.parameter;
 
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.ewm.model.dto.EventFullDto;
+import ru.practicum.ewm.model.dto.EventState;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +18,7 @@ public class EventParameter {
     private List<Long> ids;
     private List<Long> categoryIds;
     private List<Long> initiatorIds;
-    private List<EventFullDto.StateEnum> states;
+    private List<EventState> states;
 
     /**
      * Event date should not be before this date
