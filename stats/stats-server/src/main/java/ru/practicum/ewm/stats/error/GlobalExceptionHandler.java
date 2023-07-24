@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import ru.practicum.ewm.stats.error.exception.EndBeforeStartTimeException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.LinkedList;
@@ -23,6 +24,16 @@ public class GlobalExceptionHandler {
 
     public GlobalExceptionHandler(CustomErrorAttributes attributes) {
         this.attributes = attributes;
+    }
+
+    @ExceptionHandler(EndBeforeStartTimeException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public Map<String, Object> onEndBeforeStartTimeException(final EndBeforeStartTimeException e, final WebRequest request) {
+        Map<String, Object> errorAttributes = attributes
+                .errorAttributes(request, defaults(), BAD_REQUEST, e.getMessage())
+                .build();
+        log.warn("{}: {}", e.getMessage(), errorAttributes);
+        return errorAttributes;
     }
 
     //Fields and object validation violations
