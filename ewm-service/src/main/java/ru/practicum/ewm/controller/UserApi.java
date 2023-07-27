@@ -10,6 +10,7 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 @RequestMapping("/users")
 @Validated
@@ -74,4 +75,25 @@ public interface UserApi {
             @Valid @RequestBody UpdateEventUserRequest updateEventUserRequest
     );
 
+    @PostMapping("/{userId}/comments")
+    @ResponseStatus(CREATED)
+    CommentDto addComment(@PathVariable("userId") Long userId,
+                          @RequestParam("eventId") Long eventId,
+                          @Valid @RequestBody CommentDto commentDto
+    );
+
+    @GetMapping("/{userId}/comments")
+    List<CommentDto> getCommentsByUserId(@PathVariable("userId") Long userId);
+
+    @PatchMapping("/{userId}/comments/{commentId}")
+    CommentDto updateComment(@PathVariable("userId") Long userId,
+                             @PathVariable("commentId") Long commentId,
+                             @RequestBody CommentDto commentDto
+    );
+
+    @DeleteMapping("/{userId}/comments/{commentId}")
+    @ResponseStatus(NO_CONTENT)
+    void deleteComment(@PathVariable("userId") Long userId,
+                       @PathVariable("commentId") Long commentId
+    );
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.controller.UserApi;
 import ru.practicum.ewm.model.dto.*;
+import ru.practicum.ewm.service.CommentService;
 import ru.practicum.ewm.service.EventService;
 import ru.practicum.ewm.service.ParticipationRequestService;
 
@@ -17,6 +18,7 @@ public class UserController implements UserApi {
 
     private final EventService eventService;
     private final ParticipationRequestService requestService;
+    private final CommentService commentService;
 
     //-- /events
     @Override
@@ -87,4 +89,33 @@ public class UserController implements UserApi {
         return participationRequestDtos;
     }
     //--
+
+    //-- /comments
+
+    @Override
+    public CommentDto addComment(Long userId, Long eventId, CommentDto commentDto) {
+        CommentDto comment = commentService.addComment(userId, eventId, commentDto);
+        log.info("Comment added: {}", comment);
+        return comment;
+    }
+
+    @Override
+    public List<CommentDto> getCommentsByUserId(Long userId) {
+        List<CommentDto> commentDtos = commentService.getCommentsByUserId(userId);
+        log.info("Found {} comments, params: userId={}", commentDtos.size(), userId);
+        return commentDtos;
+    }
+
+    @Override
+    public CommentDto updateComment(Long userId, Long commentId, CommentDto commentDto) {
+        CommentDto comment = commentService.updateComment(userId, commentId, commentDto);
+        log.info("Comment updated: {}", comment);
+        return comment;
+    }
+
+    @Override
+    public void deleteComment(Long userId, Long commentId) {
+        commentService.deleteComment(userId, commentId);
+        log.info("Comment deleted: {}", commentId);
+    }
 }

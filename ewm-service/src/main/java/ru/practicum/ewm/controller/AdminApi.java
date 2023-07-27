@@ -88,4 +88,8 @@ public interface AdminApi {
             @PathVariable("eventId") Long eventId,
             @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest
     );
+
+    @DeleteMapping("/comments/{commentId}")
+    @ResponseStatus(NO_CONTENT)
+    void deleteCommentAdmin(@PathVariable("commentId") Long commentId);
 }

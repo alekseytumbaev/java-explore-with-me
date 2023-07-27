@@ -795,6 +795,37 @@
         ]
       }
     },
+    "/admin/comments/{commentId}": {
+      "parameters": [
+        {
+          "description": "Id комментария",
+          "name": "commentId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "delete": {
+        "summary": "Удаление комментария пользователя",
+        "tags": [
+          "Admin: Комментарии"
+        ],
+        "responses": {
+          "204": {
+            "description": "Комментарий удален"
+          },
+          "404": {
+            "description": "Комментарий не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/categories": {
       "get": {
         "description": "В случае, если по заданным фильтрам не найдено ни одной категории, возвращает пустой список",
@@ -1272,6 +1303,72 @@
         "tags": [
           "Public: События"
         ]
+      }
+    },
+    "/comments": {
+      "get": {
+        "summary": "Получение комментариев опредленного события",
+        "description": "Комментарии отсортированы по дате от новых к старым",
+        "operationId": "getCommentsByEventId",
+        "tags": [
+          "Public: Комментарии"
+        ],
+        "parameters": [
+          {
+            "description": "id события",
+            "in": "query",
+            "name": "eventId",
+            "required": true
+          },
+          {
+            "description": "Количество комментариев, которые нужно пропустить для формирования текущего набора",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "description": "Количество комментариев в наборе",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Комментарии отправлены",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommentDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "событие не найдено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/users/{userId}/events": {
@@ -1983,6 +2080,227 @@
           "Private: Запросы на участие"
         ]
       }
+    },
+    "/users/{userId}/comments": {
+      "parameters": [
+        {
+          "description": "Id пользователя",
+          "in": "path",
+          "name": "userId",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "addComment",
+        "summary": "Добавление комментария",
+        "tags": [
+          "Private: Комментарии"
+        ],
+        "parameters": [
+          {
+            "description": "id события",
+            "in": "query",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentDto"
+                }
+              }
+            },
+            "description": "Комментарий создан"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Событие или пользователь не найдены"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Событие недоступно или отменено"
+          }
+        }
+      },
+      "get": {
+        "operationId": "getCommentsByUserId",
+        "summary": "Получение всех комментариев текущего пользователя",
+        "description": "Комментарии отсортированы по дате от новых к старым",
+        "tags": [
+          "Private: Комментарии"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommentDto"
+                  }
+                }
+              }
+            },
+            "description": "Комментарии получены"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Пользователь не найден"
+          }
+        }
+      }
+    },
+    "/users/{userId}/comments/{commentId}": {
+      "parameters": [
+        {
+          "description": "Id пользователя",
+          "in": "path",
+          "name": "userId",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        {
+          "description": "Id комментария",
+          "in": "path",
+          "name": "commentId",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "patch": {
+        "operationId": "editComment",
+        "summary": "Изменение комментария",
+        "tags": [
+          "Private: Комментарии"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Комментарий отредактирован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Некорректный запрос",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Комментарий не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Комментарий пытается отредактировать не его автор или с создания комментария прошло более 15 минут",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteComment",
+        "summary": "Удаление комментария",
+        "tags": [
+          "Private: Комментарии"
+        ],
+        "responses": {
+          "204": {
+            "description": "Комментарий удален"
+          },
+          "404": {
+            "description": "Комментарий не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Пользователь не является автором комментария или с создания комментария прошло более 15 минут",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2495,8 +2813,7 @@
             "description": "Заголовок подборки",
             "example": "Летние концерты"
           }
-        },
-        "description": "Подборка событий"
+        }
       },
       "NewEventDto": {
         "required": [
@@ -2830,6 +3147,54 @@
           }
         },
         "description": "Пользователь (краткая информация)"
+      },
+      "CommentDto": {
+        "required": [
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Идентификатор",
+            "format": "int64",
+            "example": 1,
+            "readOnly": true
+          },
+          "text": {
+            "type": "string",
+            "description": "Текст комментария",
+            "example": "Конкурсы интересные",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "authorId": {
+            "type": "integer",
+            "description": "Идентификатор автора",
+            "format": "int64",
+            "example": 1,
+            "readOnly": true
+          },
+          "eventId": {
+            "type": "integer",
+            "description": "Идентификатор события",
+            "format": "int64",
+            "example": 1,
+            "readOnly": true
+          },
+          "createdOn": {
+            "type": "string",
+            "description": "Дата создания",
+            "example": "2022-09-06T21:10:05",
+            "readOnly": true
+          },
+          "editedOn": {
+            "type": "string",
+            "description": "Дата последнего редактирования",
+            "example": "2022-09-06T21:10:20",
+            "readOnly": true
+          }
+        }
       }
     }
   }

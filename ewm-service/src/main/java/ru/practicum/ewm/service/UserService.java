@@ -51,4 +51,8 @@ public class UserService {
         return userRepo.findById(userId).orElseThrow(() ->
                 new UserNotFoundException(format("Cannot get user with id=%s, because it's not found", userId)));
     }
+
+    public boolean existsById(long userId) {
+        return userRepo.existsById(userId);
+    }
 }

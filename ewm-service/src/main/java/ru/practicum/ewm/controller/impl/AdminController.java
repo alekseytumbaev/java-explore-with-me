@@ -6,10 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.controller.AdminApi;
 import ru.practicum.ewm.model.dto.*;
 import ru.practicum.ewm.model.parameter.EventParameter;
-import ru.practicum.ewm.service.CategoryService;
-import ru.practicum.ewm.service.CompilationService;
-import ru.practicum.ewm.service.EventService;
-import ru.practicum.ewm.service.UserService;
+import ru.practicum.ewm.service.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +20,7 @@ public class AdminController implements AdminApi {
     private final CategoryService categoryService;
     private final EventService eventService;
     private final CompilationService compilationService;
+    private final CommentService commentService;
 
     //---/users
     @Override
@@ -117,4 +115,12 @@ public class AdminController implements AdminApi {
         return compilationDto;
     }
     //---
+
+    //---/comments
+
+    @Override
+    public void deleteCommentAdmin(Long commentId) {
+        commentService.deleteCommentAdmin(commentId);
+        log.info("Comment with id={} deleted", commentId);
+    }
 }
