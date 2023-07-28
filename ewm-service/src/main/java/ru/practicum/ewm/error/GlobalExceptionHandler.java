@@ -26,6 +26,30 @@ import static org.springframework.http.HttpStatus.*;
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler(CommentActionRestrictedException.class)
+    @ResponseStatus(CONFLICT)
+    public ApiError onCommentActionRestricted(final CommentActionRestrictedException e) {
+        ApiError apiError = new ApiError(null, e.getMessage(), "Comment action restricted", CONFLICT, LocalDateTime.now());
+        log.warn("{}: {}", e.getMessage(), apiError);
+        return apiError;
+    }
+
+    @ExceptionHandler(CommentingRestrictedException.class)
+    @ResponseStatus(CONFLICT)
+    public ApiError onCommentingRestricted(final CommentingRestrictedException e) {
+        ApiError apiError = new ApiError(null, e.getMessage(), "Commenting restricted", CONFLICT, LocalDateTime.now());
+        log.warn("{}: {}", e.getMessage(), apiError);
+        return apiError;
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    @ResponseStatus(NOT_FOUND)
+    public ApiError onCommentNotFoundException(final CommentNotFoundException e) {
+        ApiError apiError = new ApiError(null, e.getMessage(), NOT_FOUND.getReasonPhrase(), NOT_FOUND, LocalDateTime.now());
+        log.warn("{}: {}", e.getMessage(), apiError);
+        return apiError;
+    }
+
     @ExceptionHandler(EndBeforeStartTimeException.class)
     @ResponseStatus(BAD_REQUEST)
     public ApiError onEndBeforeStartTimeException(final EndBeforeStartTimeException e) {
